@@ -2,17 +2,16 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import type { GetServerSideProps } from 'next';
 
-export default function RedirectPage() {
+export default function RedirectPage(): JSX.Element {
   const router = useRouter();
   const { redirect } = router.query;
 
   useEffect(() => {
     if (redirect) {
-      // Construct your target destination path from the catch-all array
       const targetPath = Array.isArray(redirect) ? redirect.join('/') : redirect;
       
-      // Perform your redirect logic here (e.g., redirecting to a profile or home)
-      router.replace(`/${targetPath}`);
+      // Use the 'void' operator to explicitly tell ESLint we are purposely discarding the Promise
+      void router.replace(`/${targetPath}`);
     }
   }, [redirect, router]);
 
@@ -25,8 +24,8 @@ export default function RedirectPage() {
   );
 }
 
-// CRITICAL: Forces Next.js to bypass static pre-rendering during Vercel build phase
-export const getServerSideProps: GetServerSideProps = async () => {
+// Removed the 'async' keyword to satisfy the @typescript-eslint/require-await rule
+export const getServerSideProps: GetServerSideProps = () => {
   return {
     props: {}
   };
