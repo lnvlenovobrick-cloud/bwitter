@@ -15,8 +15,8 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": "src",
-  "paths": {
-  "@lib/*": ["./lib/*"],
+ "paths": {
+  "@lib/*": ["./customlib/*"],
   "@components/*": ["./components/*"]
 }
     }
