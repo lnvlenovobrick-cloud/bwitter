@@ -22,7 +22,7 @@ import {
   userStatsCollection,
   userBookmarksCollection
 } from './collections';
-import type { WithFieldValue, Query } from 'firebase/firestore';
+import type { WithFieldValue, Query, Firestore } from 'firebase/firestore';
 import type { EditableUserData } from '@lib/types/user';
 import type { FilesWithId, ImagesPreview } from '@lib/types/file';
 import type { Bookmark } from '@lib/types/bookmark';
@@ -191,7 +191,7 @@ export function manageRetweet(
   tweetId: string
 ) {
   return async (): Promise<void> => {
-    const batch = writeBatch(db);
+    const batch = writeBatch(db as Firestore);
 
     const tweetRef = doc(tweetsCollection, tweetId);
     const userStatsRef = doc(userStatsCollection(userId), 'stats');
@@ -226,7 +226,7 @@ export function manageLike(
   tweetId: string
 ) {
   return async (): Promise<void> => {
-    const batch = writeBatch(db);
+    const batch = writeBatch(db as Firestore);
 
     const userStatsRef = doc(userStatsCollection(userId), 'stats');
     const tweetRef = doc(tweetsCollection, tweetId);
@@ -275,7 +275,7 @@ export async function clearAllBookmarks(userId: string): Promise<void> {
   const bookmarksRef = userBookmarksCollection(userId);
   const bookmarksSnapshot = await getDocs(bookmarksRef);
 
-  const batch = writeBatch(db);
+  const batch = writeBatch(db as Firestore);
 
   bookmarksSnapshot.forEach(({ ref }) => batch.delete(ref));
 
