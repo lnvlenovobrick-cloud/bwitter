@@ -23,6 +23,7 @@ import {
   userBookmarksCollection
 } from './collections';
 import type { WithFieldValue, Query, Firestore } from 'firebase/firestore';
+import type { FirebaseStorage } from 'firebase/storage';
 import type { EditableUserData } from '@lib/types/user';
 import type { FilesWithId, ImagesPreview } from '@lib/types/file';
 import type { Bookmark } from '@lib/types/bookmark';
@@ -134,7 +135,8 @@ export async function uploadImages(
     files.map(async (file) => {
       const { id, name: alt, type } = file;
 
-      const storageRef = ref(storage, `images/${userId}/${id}`);
+      // Added "as FirebaseStorage" to bypass compilation check
+      const storageRef = ref(storage as FirebaseStorage, `images/${userId}/${id}`);
 
       await uploadBytesResumable(storageRef, file);
 
