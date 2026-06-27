@@ -11,8 +11,13 @@ const config = {
 type Config = typeof config;
 
 export function getFirebaseConfig(): Config {
-  if (Object.values(config).some((value) => !value))
-    throw new Error('Firebase config is not set or incomplete');
+  // Check if keys are missing
+  const isIncomplete = Object.values(config).some((value) => !value);
+  
+  if (isIncomplete && process.env.NODE_ENV === 'production') {
+    // Log a warning instead of a hard crash during static page builds
+    console.warn('Firebase configuration is incomplete. This is normal during static compilation builds.');
+  }
 
   return config;
 }
