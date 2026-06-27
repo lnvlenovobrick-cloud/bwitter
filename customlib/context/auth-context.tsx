@@ -53,9 +53,14 @@ export function AuthContextProvider({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // 1. Guard check to skip initialization during static build compilation if auth context is blank
+    if (!auth) {
+      setLoading(false);
+      return;
+    }
+
     const manageUser = async (authUser: AuthUser): Promise<void> => {
       const { uid, displayName, photoURL } = authUser;
-
       const userSnapshot = await getDoc(doc(usersCollection, uid));
 
       if (!userSnapshot.exists()) {
@@ -131,15 +136,20 @@ export function AuthContextProvider({
       }
     };
 
-    onAuthStateChanged(auth, handleUserAuth);
+    const unsubscribe = onAuthStateChanged(auth, handleUserAuth);
+    return () => unsubscribe();
   }, []);
 
- useEffect(() => {
-  if (!auth) return; // Add this guard line right here
+  useEffect(() => {
+    if (!auth || !user?.id) return;
 
-  const unsubscribe = onAuthStateChanged(auth, handleUserAuth);
-  return () => unsubscribe();
-}, [auth]);
+    const id = user.id;
+
+    // Listens for active document snapshot updates
+    const unsubscribeUser = onSnapshot(doc(usersCollection, id), (snapshot) => {
+      const userData = snapshot.data();
+      setUser(userData ?? null);
+    });
 
     const unsubscribeBookmarks = onSnapshot(
       userBookmarksCollection(id),
@@ -153,11 +163,11 @@ export function AuthContextProvider({
       unsubscribeUser();
       unsubscribeBookmarks();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
   const signInWithGoogle = async (): Promise<void> => {
     try {
+      if (!auth) return;
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error) {
@@ -167,6 +177,7 @@ export function AuthContextProvider({
 
   const signOut = async (): Promise<void> => {
     try {
+      if (!auth) return;
       await signOutFirebase(auth);
     } catch (error) {
       setError(error as Error);
