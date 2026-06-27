@@ -134,14 +134,12 @@ export function AuthContextProvider({
     onAuthStateChanged(auth, handleUserAuth);
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
+ useEffect(() => {
+  if (!auth) return; // Add this guard line right here
 
-    const { id } = user;
-
-    const unsubscribeUser = onSnapshot(doc(usersCollection, id), (doc) => {
-      setUser(doc.data() as User);
-    });
+  const unsubscribe = onAuthStateChanged(auth, handleUserAuth);
+  return () => unsubscribe();
+}, [auth]);
 
     const unsubscribeBookmarks = onSnapshot(
       userBookmarksCollection(id),
