@@ -5,8 +5,21 @@ import { SEO } from '@components/common/seo';
 import type { GetServerSideProps } from 'next';
 
 export default function NotFound(): JSX.Element {
-  // CRITICAL BUILD GUARD: Stops Next.js from reading context properties on the build server
-  if (typeof window === 'undefined') {
+  // 1. Always call hooks at the very top level of the component
+  const { theme } = useTheme();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    // This only executes once the page safely hits the browser window
+    setIsMounted(true);
+    if (theme) {
+      setIsDarkMode(['dim', 'dark'].includes(theme));
+    }
+  }, [theme]);
+
+  // 2. Conditional returns are completely safe down here, AFTER all hooks are declared
+  if (!isMounted) {
     return (
       <div className='flex min-h-screen items-center justify-center'>
         <p className='text-light-secondary dark:text-dark-secondary animate-pulse'>
@@ -15,14 +28,6 @@ export default function NotFound(): JSX.Element {
       </div>
     );
   }
-
-  // The rest runs safely inside the user's browser context at runtime
-  const { theme } = useTheme();
-  const [isDarkMode, setIsDarkMode] = useState(false);
-
-  useEffect(() => {
-    if (theme) setIsDarkMode(['dim', 'dark'].includes(theme));
-  }, [theme]);
 
   return (
     <>
@@ -36,7 +41,6 @@ export default function NotFound(): JSX.Element {
   );
 }
 
-// Forces Next.js to fully treat this page as server-rendered on demand
 export const getServerSideProps: GetServerSideProps = async (context) => {
   await Promise.resolve(!!context.res);
   return {
