@@ -10,7 +10,6 @@ export default function RedirectPage(): JSX.Element {
     if (redirect) {
       const targetPath = Array.isArray(redirect) ? redirect.join('/') : redirect;
       
-      // Use the 'void' operator to explicitly tell ESLint we are purposely discarding the Promise
       void router.replace(`/${targetPath}`);
     }
   }, [redirect, router]);
@@ -24,9 +23,10 @@ export default function RedirectPage(): JSX.Element {
   );
 }
 
-// Removed the 'async' keyword to satisfy the @typescript-eslint/require-await rule
+// Wrapping the return value in Promise.resolve satisfies the Next.js type requirement 
+// without triggering the ESLint 'require-await' rule.
 export const getServerSideProps: GetServerSideProps = () => {
-  return {
+  return Promise.resolve({
     props: {}
-  };
+  });
 };
