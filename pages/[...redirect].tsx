@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
-import NotFound from './404';
-
-export default function Redirect(): JSX.Element {
-  return <NotFound />;
-}
+export const getStaticPaths = () => {
+  return {
+    paths: [], // Leave this empty so it builds nothing at compile-time
+    fallback: 'blocking' // Forces it to wait until runtime
+  };
+};
