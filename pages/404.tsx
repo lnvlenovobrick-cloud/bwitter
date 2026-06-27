@@ -2,16 +2,15 @@ import { useState, useEffect } from 'react';
 import Error from 'next/error';
 import { useTheme } from '@lib/context/theme-context';
 import { SEO } from '@components/common/seo';
+import type { GetStaticProps } from 'next';
 
 export default function NotFound(): JSX.Element {
   const { theme } = useTheme();
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Only checks the theme once safely loaded in the user's browser window
-    if (theme) {
-      setIsDarkMode(['dim', 'dark'].includes(theme));
-    }
+    // Cleaned up the brackets to satisfy the single-line curly rule
+    if (theme) setIsDarkMode(['dim', 'dark'].includes(theme));
   }, [theme]);
 
   return (
@@ -25,3 +24,10 @@ export default function NotFound(): JSX.Element {
     </>
   );
 }
+
+// Bypasses Next.js static collection failures during empty context compilation
+export const getStaticProps: GetStaticProps = () => {
+  return {
+    props: {}
+  };
+};
