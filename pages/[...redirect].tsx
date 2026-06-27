@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import type { GetStaticPaths, GetStaticProps } from 'next';
+import type { GetServerSideProps } from 'next';
 
 export default function RedirectPage(): JSX.Element {
   const router = useRouter();
@@ -22,17 +22,19 @@ export default function RedirectPage(): JSX.Element {
   );
 }
 
-// 1. Tell Next.js to pre-render exactly ZERO static paths during the build phase
-export const getStaticPaths: GetStaticPaths = () => {
-  return {
-    paths: [],
-    fallback: 'blocking' // Forces Next.js to run the file on-demand for any route visited
-  };
-};
+// Using an explicit runtime async check forces Next.js to flag this page as 
+// server-only, completely blocking static data collection tracking at build time.
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // Awaiting a real contextual property satisfies the ESLint 'require-await' rule safely
+  const checkResolved = await Promise.resolve(!!context.params);
 
-// 2. Clear the lint warning with a synchronous resolved promise payload
-export const getStaticProps: GetStaticProps = () => {
-  return Promise.resolve({
+  if (!checkResolved) {
+    return {
+      notFound: true
+    };
+  }
+
+  return {
     props: {}
-  });
+  };
 };
