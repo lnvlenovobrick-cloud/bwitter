@@ -91,7 +91,7 @@ export async function manageFollow(
   userId: string,
   targetUserId: string
 ): Promise<void> {
-  const batch = writeBatch(db);
+  const batch = writeBatch(db as Firestore);
 
   const userDocRef = doc(usersCollection, userId);
   const targetUserDocRef = doc(usersCollection, targetUserId);
