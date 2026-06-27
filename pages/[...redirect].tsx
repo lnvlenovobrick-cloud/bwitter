@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
-import type { GetServerSideProps } from 'next';
+import type { GetStaticPaths, GetStaticProps } from 'next';
 
 export default function RedirectPage(): JSX.Element {
   const router = useRouter();
@@ -9,7 +9,6 @@ export default function RedirectPage(): JSX.Element {
   useEffect(() => {
     if (redirect) {
       const targetPath = Array.isArray(redirect) ? redirect.join('/') : redirect;
-      
       void router.replace(`/${targetPath}`);
     }
   }, [redirect, router]);
@@ -23,12 +22,17 @@ export default function RedirectPage(): JSX.Element {
   );
 }
 
-// Keeping 'async' and adding a fake 'await' forces dynamic runtime execution 
-// without triggering the ESLint rule or crashing the compiler.
-export const getServerSideProps: GetServerSideProps = async () => {
-  await Promise.resolve(); 
-
+// 1. Tell Next.js to pre-render exactly ZERO static paths during the build phase
+export const getStaticPaths: GetStaticPaths = () => {
   return {
-    props: {}
+    paths: [],
+    fallback: 'blocking' // Forces Next.js to run the file on-demand for any route visited
   };
+};
+
+// 2. Clear the lint warning with a synchronous resolved promise payload
+export const getStaticProps: GetStaticProps = () => {
+  return Promise.resolve({
+    props: {}
+  });
 };
