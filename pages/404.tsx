@@ -3,19 +3,19 @@ import dynamic from 'next/dynamic';
 import { SEO } from '@components/common/seo';
 import type { ReactElement, ReactNode } from 'react';
 
-// Dynamically import the layouts with SSR disabled so Next.js doesn't execute 
-// any of their underlying context hooks during the static production compilation build phase.
-const DynamicProtectedLayout = dynamic(
+// Explicitly typing the dynamic loaders ensures TypeScript recognizes 
+// that these components accept standard React children layout wrappers.
+const DynamicProtectedLayout = dynamic<{ children: ReactNode }>(
   () => import('@components/layout/common-layout').then((mod) => mod.ProtectedLayout),
   { ssr: false }
 );
 
-const DynamicHomeLayout = dynamic(
+const DynamicHomeLayout = dynamic<{ children: ReactNode }>(
   () => import('@components/layout/common-layout').then((mod) => mod.HomeLayout),
   { ssr: false }
 );
 
-const DynamicMainLayout = dynamic(
+const DynamicMainLayout = dynamic<{ children: ReactNode }>(
   () => import('@components/layout/main-layout').then((mod) => mod.MainLayout),
   { ssr: false }
 );
