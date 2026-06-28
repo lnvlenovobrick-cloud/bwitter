@@ -14,6 +14,7 @@ import { Tweet } from '@components/tweet/tweet';
 import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
 import type { ReactElement, ReactNode } from 'react';
+import type { GetServerSideProps } from 'next';
 
 export default function Home(): JSX.Element {
   const { isMobile } = useWindow();
@@ -62,3 +63,10 @@ Home.getLayout = (page: ReactElement): ReactNode => (
     </MainLayout>
   </ProtectedLayout>
 );
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  await Promise.resolve();
+  return {
+    props: {}
+  };
+};
