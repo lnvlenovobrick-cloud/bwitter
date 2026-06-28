@@ -28,7 +28,9 @@ import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 
-// Automatically extracts the exact model types from your specific collection definitions
+// 1. Force Next.js to treat this entire page as dynamic, skipping build-time data collection
+export const dynamic = 'force-dynamic';
+
 type InferCollectionType<T> = T extends CollectionReference<infer U> ? U : never;
 
 type TargetBookmark = InferCollectionType<ReturnType<typeof userBookmarksCollection>>;
@@ -36,9 +38,7 @@ type TargetTweet = InferCollectionType<typeof tweetsCollection>;
 
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
-
   const { open, openModal, closeModal } = useModal();
-
   const userId = user?.id ? String(user.id) : '';
 
   const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection<TargetBookmark>(
@@ -130,8 +130,7 @@ Bookmarks.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  await Promise.resolve(!!context.res);
+export const getServerSideProps: GetServerSideProps = async () => {
   return {
     props: {}
   };
