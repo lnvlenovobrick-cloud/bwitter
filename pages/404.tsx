@@ -1,8 +1,24 @@
 import { useEffect, useState } from 'react';
-import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
-import { MainLayout } from '@components/layout/main-layout';
+import dynamic from 'next/dynamic';
 import { SEO } from '@components/common/seo';
 import type { ReactElement, ReactNode } from 'react';
+
+// Dynamically import the layouts with SSR disabled so Next.js doesn't execute 
+// any of their underlying context hooks during the static production compilation build phase.
+const DynamicProtectedLayout = dynamic(
+  () => import('@components/layout/common-layout').then((mod) => mod.ProtectedLayout),
+  { ssr: false }
+);
+
+const DynamicHomeLayout = dynamic(
+  () => import('@components/layout/common-layout').then((mod) => mod.HomeLayout),
+  { ssr: false }
+);
+
+const DynamicMainLayout = dynamic(
+  () => import('@components/layout/main-layout').then((mod) => mod.MainLayout),
+  { ssr: false }
+);
 
 export default function Custom404(): JSX.Element {
   const [isMounted, setIsMounted] = useState(false);
@@ -38,9 +54,9 @@ export default function Custom404(): JSX.Element {
 }
 
 Custom404.getLayout = (page: ReactElement): ReactNode => (
-  <ProtectedLayout>
-    <MainLayout>
-      <HomeLayout>{page}</HomeLayout>
-    </MainLayout>
-  </ProtectedLayout>
+  <DynamicProtectedLayout>
+    <DynamicMainLayout>
+      <DynamicHomeLayout>{page}</DynamicHomeLayout>
+    </DynamicMainLayout>
+  </DynamicProtectedLayout>
 );
