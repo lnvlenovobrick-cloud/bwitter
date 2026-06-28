@@ -3,8 +3,6 @@ import dynamic from 'next/dynamic';
 import { SEO } from '@components/common/seo';
 import type { ReactElement, ReactNode } from 'react';
 
-// Explicitly typing the dynamic loaders ensures TypeScript recognizes 
-// that these components accept standard React children layout wrappers.
 const DynamicProtectedLayout = dynamic<{ children: ReactNode }>(
   () => import('@components/layout/common-layout').then((mod) => mod.ProtectedLayout),
   { ssr: false }
@@ -27,17 +25,6 @@ export default function Custom404(): JSX.Element {
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
-    return (
-      <>
-        <SEO title='Page not found / Twitter' />
-        <div className='flex items-center justify-center p-8'>
-          <span className='text-light-secondary dark:text-dark-secondary'>Loading...</span>
-        </div>
-      </>
-    );
-  }
-
   return (
     <>
       <SEO title='Page not found / Twitter' />
@@ -53,10 +40,27 @@ export default function Custom404(): JSX.Element {
   );
 }
 
-Custom404.getLayout = (page: ReactElement): ReactNode => (
-  <DynamicProtectedLayout>
-    <DynamicMainLayout>
-      <DynamicHomeLayout>{page}</DynamicHomeLayout>
-    </DynamicMainLayout>
-  </DynamicProtectedLayout>
-);
+Custom404.getLayout = (page: ReactElement): ReactNode => {
+  // This client-side guard wrapper inside the layout completely blocks 
+  // Next.js from triggering context side-effects during build static extraction!
+  return (
+    <ClientOnlyWrapper>
+      <DynamicProtectedLayout>
+        <DynamicMainLayout>
+          <DynamicHomeLayout>{page}</DynamicHomeLayout>
+        </DynamicMainLayout>
+      </DynamicProtectedLayout>
+    </ClientOnlyWrapper>
+  );
+};
+
+// Internal safe guard component
+function ClientOnlyWrapper({ children }: { children: ReactNode }): JSX.Element | null {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
+  return <>{children}</>;
+}
