@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { where, orderBy } from 'firebase/firestore';
 import { useWindow } from '@lib/context/window-context';
@@ -15,6 +16,17 @@ import { Loading } from '@components/ui/loading';
 import { Error } from '@components/ui/error';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
+
+// Client-side guard to isolate layout evaluation away from build-time static engine
+function ClientOnlyWrapper({ children }: { children: ReactNode }): JSX.Element | null {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
+  return <>{children}</>;
+}
 
 export default function Home(): JSX.Element {
   const { isMobile } = useWindow();
@@ -57,11 +69,13 @@ export default function Home(): JSX.Element {
 }
 
 Home.getLayout = (page: ReactElement): ReactNode => (
-  <ProtectedLayout>
-    <MainLayout>
-      <HomeLayout>{page}</HomeLayout>
-    </MainLayout>
-  </ProtectedLayout>
+  <ClientOnlyWrapper>
+    <ProtectedLayout>
+      <MainLayout>
+        <HomeLayout>{page}</HomeLayout>
+      </MainLayout>
+    </ProtectedLayout>
+  </ClientOnlyWrapper>
 );
 
 export const getServerSideProps: GetServerSideProps = async () => {
