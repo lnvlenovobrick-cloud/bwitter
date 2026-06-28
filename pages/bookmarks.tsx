@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { orderBy, query } from 'firebase/firestore';
+import type { CollectionReference } from 'firebase/firestore';
 import { useAuth } from '@lib/context/auth-context';
 import { useModal } from '@lib/hooks/useModal';
 import { useCollection } from '@lib/hooks/useCollection';
@@ -27,19 +28,11 @@ import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 
-// Local strict interfaces to completely appease the @typescript-eslint engine
-interface LocalBookmark {
-  id: string;
-  createdAt: unknown;
-  [key: string]: unknown;
-}
+// Automatically extracts the exact model types from your specific collection definitions
+type InferCollectionType<T> = T extends CollectionReference<infer U> ? U : never;
 
-interface LocalTweet {
-  id: string;
-  text?: string;
-  createdAt: unknown;
-  [key: string]: unknown;
-}
+type TargetBookmark = InferCollectionType<ReturnType<typeof userBookmarksCollection>>;
+type TargetTweet = InferCollectionType<typeof tweetsCollection>;
 
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
@@ -48,7 +41,7 @@ export default function Bookmarks(): JSX.Element {
 
   const userId = user?.id ? String(user.id) : '';
 
-  const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection<LocalBookmark>(
+  const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection<TargetBookmark>(
     query(userBookmarksCollection(userId), orderBy('createdAt', 'desc')),
     { allowNull: true }
   );
@@ -58,7 +51,7 @@ export default function Bookmarks(): JSX.Element {
     [bookmarksRef]
   );
 
-  const { data: tweetData, loading: tweetLoading } = useArrayDocument<LocalTweet>(
+  const { data: tweetData, loading: tweetLoading } = useArrayDocument<TargetTweet>(
     tweetIds,
     tweetsCollection,
     { includeUser: true }
