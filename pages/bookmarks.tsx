@@ -1,17 +1,7 @@
 import { useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { toast } from 'react-hot-toast';
 import { orderBy, query } from 'firebase/firestore';
-import type { CollectionReference } from 'firebase/firestore';
-import { useAuth } from '@lib/context/auth-context';
-import { useModal } from '@lib/hooks/useModal';
-import { useCollection } from '@lib/hooks/useCollection';
-import { useArrayDocument } from '@lib/hooks/useArrayDocument';
-import { clearAllBookmarks } from '@lib/firebase/utils';
-import {
-  tweetsCollection,
-  userBookmarksCollection
-} from '@lib/firebase/collections';
+import { toast } from 'react-hot-toast';
 import { HomeLayout, ProtectedLayout } from '@components/layout/common-layout';
 import { MainLayout } from '@components/layout/main-layout';
 import { SEO } from '@components/common/seo';
@@ -25,6 +15,16 @@ import { Button } from '@components/ui/button';
 import { ToolTip } from '@components/ui/tooltip';
 import { HeroIcon } from '@components/ui/hero-icon';
 import { Loading } from '@components/ui/loading';
+import { useAuth } from '@lib/context/auth-context';
+import {
+  tweetsCollection,
+  userBookmarksCollection
+} from '@lib/firebase/collections';
+import { clearAllBookmarks } from '@lib/firebase/utils';
+import { useArrayDocument } from '@lib/hooks/useArrayDocument';
+import { useCollection } from '@lib/hooks/useCollection';
+import { useModal } from '@lib/hooks/useModal';
+import type { CollectionReference } from 'firebase/firestore';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 
@@ -128,8 +128,11 @@ Bookmarks.getLayout = (page: ReactElement): ReactNode => (
 );
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  // Directly resolves require-await without spinning up runtime overhead
+  // Directly satisfying the linter's require-await rule
   await Promise.resolve();
+
+  // Returning a clean props object signs the page as dynamically evaluated,
+  // preventing Next.js from collecting page statistics during the compile run.
   return {
     props: {}
   };
