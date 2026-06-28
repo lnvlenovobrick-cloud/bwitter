@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { orderBy, query } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
@@ -32,6 +32,17 @@ type InferCollectionType<T> = T extends CollectionReference<infer U> ? U : never
 
 type TargetBookmark = InferCollectionType<ReturnType<typeof userBookmarksCollection>>;
 type TargetTweet = InferCollectionType<typeof tweetsCollection>;
+
+// Client-side guard to isolate layout evaluation away from build-time static engine
+function ClientOnlyWrapper({ children }: { children: ReactNode }): JSX.Element | null {
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) return null;
+  return <>{children}</>;
+}
 
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
@@ -120,11 +131,13 @@ export default function Bookmarks(): JSX.Element {
 }
 
 Bookmarks.getLayout = (page: ReactElement): ReactNode => (
-  <ProtectedLayout>
-    <MainLayout>
-      <HomeLayout>{page}</HomeLayout>
-    </MainLayout>
-  </ProtectedLayout>
+  <ClientOnlyWrapper>
+    <ProtectedLayout>
+      <MainLayout>
+        <HomeLayout>{page}</HomeLayout>
+      </MainLayout>
+    </ProtectedLayout>
+  </ClientOnlyWrapper>
 );
 
 export const getServerSideProps: GetServerSideProps = async () => {
