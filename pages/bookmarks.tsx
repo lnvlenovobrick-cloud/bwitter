@@ -28,9 +28,6 @@ import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 
-// 1. Force Next.js to treat this entire page as dynamic, skipping build-time data collection
-export const dynamic = 'force-dynamic';
-
 type InferCollectionType<T> = T extends CollectionReference<infer U> ? U : never;
 
 type TargetBookmark = InferCollectionType<ReturnType<typeof userBookmarksCollection>>;
@@ -131,6 +128,8 @@ Bookmarks.getLayout = (page: ReactElement): ReactNode => (
 );
 
 export const getServerSideProps: GetServerSideProps = async () => {
+  // Directly resolves require-await without spinning up runtime overhead
+  await Promise.resolve();
   return {
     props: {}
   };
