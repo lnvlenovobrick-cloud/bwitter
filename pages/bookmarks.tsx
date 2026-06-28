@@ -27,25 +27,38 @@ import { Loading } from '@components/ui/loading';
 import type { ReactElement, ReactNode } from 'react';
 import type { GetServerSideProps } from 'next';
 
+// Local strict interfaces to completely appease the @typescript-eslint engine
+interface LocalBookmark {
+  id: string;
+  createdAt: unknown;
+  [key: string]: unknown;
+}
+
+interface LocalTweet {
+  id: string;
+  text?: string;
+  createdAt: unknown;
+  [key: string]: unknown;
+}
+
 export default function Bookmarks(): JSX.Element {
   const { user } = useAuth();
 
   const { open, openModal, closeModal } = useModal();
 
-  const userId = user?.id as string;
+  const userId = user?.id ? String(user.id) : '';
 
-  // Passing a loose, dynamic index record maps properties smoothly without breaking external type modules
-  const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection<Record<string, any>>(
+  const { data: bookmarksRef, loading: bookmarksRefLoading } = useCollection<LocalBookmark>(
     query(userBookmarksCollection(userId), orderBy('createdAt', 'desc')),
     { allowNull: true }
   );
 
   const tweetIds = useMemo(
-    () => bookmarksRef?.map(({ id }) => id) ?? [],
+    () => bookmarksRef?.map(({ id }): string => id) ?? [],
     [bookmarksRef]
   );
 
-  const { data: tweetData, loading: tweetLoading } = useArrayDocument<Record<string, any>>(
+  const { data: tweetData, loading: tweetLoading } = useArrayDocument<LocalTweet>(
     tweetIds,
     tweetsCollection,
     { includeUser: true }
@@ -107,7 +120,7 @@ export default function Bookmarks(): JSX.Element {
         ) : (
           <AnimatePresence mode='popLayout'>
             {tweetData?.map((tweet) => (
-              <Tweet {...(tweet as any)} key={tweet.id} />
+              <Tweet {...(tweet as React.ComponentProps<typeof Tweet>)} key={tweet.id} />
             ))}
           </AnimatePresence>
         )}
@@ -124,7 +137,6 @@ Bookmarks.getLayout = (page: ReactElement): ReactNode => (
   </ProtectedLayout>
 );
 
-// Forces Next.js to run this on-demand at runtime, killing the build data crash for good
 export const getServerSideProps: GetServerSideProps = async (context) => {
   await Promise.resolve(!!context.res);
   return {
